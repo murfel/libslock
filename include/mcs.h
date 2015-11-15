@@ -40,13 +40,11 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#ifndef __sparc__
-#include <numa.h>
-#endif
 #include <pthread.h>
 #include "utils.h"
 #include "atomic_ops.h"
-
+//#define CORES_PER_SOCKET 57
+//#define CACHE_LINE_SIZE 64
 typedef struct mcs_qnode {
     volatile uint8_t waiting;
     volatile struct mcs_qnode *volatile next;

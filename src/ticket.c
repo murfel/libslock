@@ -175,7 +175,9 @@ ticket_acquire(ticketlock_t* lock)
 #  else
   while (lock->head != my_ticket)
     {
-      PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
     }
 #  endif
 #endif	/* OPTERON_OPTIMIZE */

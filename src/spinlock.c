@@ -45,7 +45,9 @@ spinlock_lock(spinlock_lock_t* the_lock, uint32_t* limits)
     volatile spinlock_lock_data_t* l = &(the_lock->lock);
     while (TAS_U8(l)) 
     {
+#ifndef __MIC__
         PAUSE;
+#endif
     } 
 }
 

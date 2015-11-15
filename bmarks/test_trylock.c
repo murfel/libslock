@@ -42,7 +42,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#ifndef __sparc__
+#ifndef __MIC__
 #include <numa.h>
 #endif
 #include "gl_lock.h"
@@ -123,9 +123,12 @@ typedef struct thread_data {
 void *test_correctness(void *data)
 {
     thread_data_t *d = (thread_data_t *)data;
+#ifndef __MIC__
     phys_id = the_cores[d->id];
     cluster_id = get_cluster(phys_id);
-
+#else
+    phys_id=d->id;
+#endif
     init_lock_local(phys_id, &the_lock, &(local_th_data[d->id]));
 
     barrier_cross(d->barrier);
@@ -133,7 +136,9 @@ void *test_correctness(void *data)
     lock_local_data* local_d = &(local_th_data[d->id]);
     while (stop == 0) {
         while (acquire_trylock(local_d,&the_lock) !=0) {
+#ifndef __MIC__
             PAUSE;
+#endif
         }
         protected_data->counter++;
         release_trylock(local_d,&the_lock);
@@ -156,7 +161,9 @@ void catcher(int sig)
 
 int main(int argc, char **argv)
 {
-    set_cpu(the_cores[0]);
+#ifndef NO_SET_CPU
+  set_cpu(the_cores[0]);
+#endif
     struct option long_options[] = {
         // These options don't set a flag
         {"help",                      no_argument,       NULL, 'h'},

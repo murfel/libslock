@@ -52,7 +52,9 @@ volatile clh_qnode* clh_acquire(clh_lock *L, clh_qnode* I )
 #endif	/* OPTERON_OPTIMIZE */
     while (pred->locked != 0) 
     {
+#ifndef __MIC__
         PAUSE;
+#endif
 #if defined(OPTERON_OPTIMIZE)
         pause_rep(23);
         PREFETCHW(pred);

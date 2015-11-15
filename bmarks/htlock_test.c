@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#ifndef __sparc__
+#ifndef __MIC__
 #include <numa.h>
 #endif
 #include "utils.h"
@@ -95,12 +95,12 @@ void*
 test(void *data)
 {
   thread_data_t *d = (thread_data_t *)data;
-//#ifdef __sparc__
+#ifndef __MIC__
     phys_id = the_cores[d->id];
     cluster_id=get_cluster(phys_id);
-//#else
-//    phys_id = d->id;
-//#endif
+#else
+    phys_id = d->id;
+#endif
 
   init_thread_htlocks(phys_id);
   htlock_t* htls = d->locks;
@@ -162,7 +162,9 @@ void catcher(int sig)
 int
 main(int argc, char* const argv[])
 {
+#ifndef NO_SET_CPU
   set_cpu(the_cores[0]);
+#endif
   struct option long_options[] = 
     {
       // These options don't set a flag

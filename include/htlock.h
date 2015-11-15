@@ -45,7 +45,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#ifndef __sparc__
+#ifndef __MIC__
 #  ifndef __tile__
 #    include <numa.h>
 #    include <emmintrin.h>
@@ -101,7 +101,9 @@ wait_cycles(uint64_t cycles)
         cycles /= 6;
         while (cycles--)
         {
+#ifndef __MIC__
             PAUSE;
+#endif
         }
     }
     else

@@ -1,20 +1,24 @@
-PLATFORM_NUMA=1
-
 ifeq ($(DEBUG),1)
   DEBUG_FLAGS=-Wall -ggdb -DDEBUG
   COMPILE_FLAGS=-O0 -DADD_PADDING -fno-inline
 else
-  DEBUG_FLAGS=-Wall
-  COMPILE_FLAGS=-O3 -DADD_PADDING
+	ifeq ($(PLATFORM), -DMIC)
+		DEBUG_FLAGS=-Wall
+		COMPILE_FLAGS=-mmic -O3 -DADD_PADDING
+	else
+ 	 DEBUG_FLAGS=-Wall
+  	COMPILE_FLAGS=-O3 -DADD_PADDING
+  	endif
 #COMPILE_FLAGS=-O3 -DADD_PADDING -DALTERNATE_CORES
 endif
 
 ifndef PLATFORM
 # PLATFORM=-DSPARC
 # PLATFORM=-DTILERA
-# PLATFORM=-DXEON
+PLATFORM= -DXEON -DR730
+PLATFORM_NUMA = 1
 # PLATFORM=-DOPTERON
-PLATFORM=-DDEFAULT
+#PLATFORM=-DDEFAULT
 endif
 
 ifeq ($(PLATFORM), -DDEFAULT)
@@ -39,15 +43,30 @@ COMPILE_FLAGS += $(OPTIMIZE)
 
 UNAME := $(shell uname)
 
-ifeq ($(PLATFORM),-DTILERA)
-	GCC:=tile-gcc
-	LIBS:=-lrt -lpthread -ltmc
+ifeq ($(PLATFORM),-DMIC)
+	GCC:=icc
+	LIBS:=-lrt -lpthread
+	COMPILE_FLAGS += -DCORE_NUM=228
 else
 ifeq ($(UNAME), Linux)
 	GCC:=gcc
 	LIBS := -lrt -lpthread -lnuma
 endif
 endif
+
+ifeq ($(KMP_AFFINITY),COMPACT) 
+COMPILE_FLAGS += -DCOMPACT
+endif
+ifeq ($(KMP_AFFINITY),SCATTER) 
+COMPILE_FLAGS += -DSCATTER
+endif
+ifeq ($(KMP_AFFINITY),BALANCED) 
+COMPILE_FLAGS += -DBALANCED
+endif
+ifeq ($(KMP_AFFINITY),NO_SET)
+COMPILE_FLAGS += -DNO_SET_CPU
+endif
+
 ifeq ($(UNAME), SunOS)
 	GCC:=/opt/csw/bin/gcc
 	LIBS := -lrt -lpthread

@@ -65,7 +65,9 @@ void mcs_acquire(mcs_lock *L, mcs_qnode_ptr I)
 #endif	/* OPTERON_OPTIMIZE */
     while (I->waiting != 0) 
     {
-        PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
 #if defined(OPTERON_OPTIMIZE)
         pause_rep(23);
         PREFETCHW(I);
@@ -91,7 +93,9 @@ void mcs_release(mcs_lock *L, mcs_qnode_ptr I)
             return;
         do {
             succ = I->next;
-            PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
         } while (!succ); // wait for successor
     }
     succ->waiting = 0;

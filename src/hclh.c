@@ -44,7 +44,9 @@ uint16_t wait_for_grant_or_cluster_master(volatile qnode *q, uint8_t my_cluster)
             return 0;
         if (aux.fields.cluster_id!=my_cluster) 
             return 0;
+#ifndef __MIC__
         PAUSE;
+#endif
     } 
 }
 
@@ -66,7 +68,9 @@ volatile qnode * hclh_acquire(local_queue *lq, global_queue *gq, qnode *my_qnode
             return my_pred;
         }
     }
+#ifndef __MIC__
     PAUSE;  PAUSE;
+#endif
 
     volatile qnode * local_tail;
     do 
@@ -77,7 +81,9 @@ volatile qnode * hclh_acquire(local_queue *lq, global_queue *gq, qnode *my_qnode
 #endif	/* OPTERON_OPTIMIZE */
         my_pred = *gq;
         local_tail = *lq;
-        PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
     } while(CAS_PTR(gq, my_pred, local_tail)!=my_pred);
 
     local_tail->fields.tail_when_spliced = 1;
@@ -85,7 +91,9 @@ volatile qnode * hclh_acquire(local_queue *lq, global_queue *gq, qnode *my_qnode
     PREFETCHW(my_pred);
 #endif	/* OPTERON_OPTIMIZE */
     while (my_pred->fields.successor_must_wait) {
-        PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
 #if defined(OPTERON_OPTIMIZE)
         pause_rep(23);
         PREFETCHW(my_pred);
@@ -123,7 +131,9 @@ qnode* hclh_release(qnode *my_qnode, qnode * my_pred) {
     while (CAS_U32(&pr->data,old_data,new_node.data)!=old_data) 
     {
         old_data=pr->data; 
-        PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
 #if defined(OPTERON_OPTIMIZE)
         PREFETCHW(pr);
 #endif	/* OPTERON_OPTIMIZE */

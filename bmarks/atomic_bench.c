@@ -43,7 +43,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#ifndef __sparc__
+#ifndef __MIC__
 #  include <numa.h>
 #endif
 #include "utils.h"
@@ -127,8 +127,10 @@ typedef struct thread_data {
 void *test_latency(void *data)
 {
     thread_data_t *d = (thread_data_t *)data;
-    phys_id = the_cores[d->id];
-    set_cpu(phys_id);
+#ifndef NO_SET_CPU
+  int phys_id = the_cores[d->id];
+  set_cpu(phys_id);
+#endif
     int rand_max;
 #if defined(TEST_CTR)
     data_type old_data;
@@ -263,8 +265,10 @@ void *test_latency(void *data)
 void *test_success(void *data)
 {
     thread_data_t *d = (thread_data_t *)data;
-    phys_id = the_cores[d->id];
-    set_cpu(phys_id);
+#ifndef NO_SET_CPU
+  int phys_id = the_cores[d->id];
+  set_cpu(phys_id);
+#endif
     int rand_max;
 #if defined(TEST_CTR)
     data_type old_data;
@@ -333,8 +337,10 @@ void *test_success(void *data)
 void *test_throughput(void *data)
 {
     thread_data_t *d = (thread_data_t *)data;
-    phys_id = the_cores[d->id];
-    set_cpu(phys_id);
+#ifndef NO_SET_CPU
+  int phys_id = the_cores[d->id];
+  set_cpu(phys_id);
+#endif
     int rand_max;
 #if defined(TEST_CTR)
     data_type old_data;
@@ -415,7 +421,9 @@ void catcher(int sig)
 
 int main(int argc, char* const argv[])
 {
-    set_cpu(the_cores[0]);
+#ifndef NO_SET_CPU
+	set_cpu(the_cores[0]);
+#endif
 #ifdef PRINT_OUTPUT
     fprintf(stderr, "The size of the data being tested: %lu\n",sizeof(data_type));
     fprintf(stderr, "Number of entries per cache line: %lu\n",CACHE_LINE_SIZE / sizeof(data_t));

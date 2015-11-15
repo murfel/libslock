@@ -55,7 +55,9 @@
 #else
 #  include <emmintrin.h>
 #  include <xmmintrin.h>
+#ifndef __MIC__
 #  include <numa.h>
+#endif
 #endif
 #include <pthread.h>
 
@@ -82,7 +84,9 @@ extern "C" {
             uint32_t i;
             for (i = 0; i < num_reps; i++)
             {
+#ifndef __MIC__
                 PAUSE;
+#endif
                 /* PAUSE; */
                 /* asm volatile ("NOP"); */
             }
@@ -137,7 +141,9 @@ extern "C" {
         cpu_set_t mask;
         CPU_ZERO(&mask);
         CPU_SET(cpu, &mask);
+#ifndef __MIC__
         numa_set_preferred(get_cluster(cpu));
+#endif
         pthread_t thread = pthread_self();
         if (pthread_setaffinity_np(thread, sizeof(cpu_set_t), &mask) != 0) {
             fprintf(stderr, "Error setting thread affinity\n");

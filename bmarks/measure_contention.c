@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#ifndef __sparc__
+#ifndef __MIC__
 #include <numa.h>
 #endif
 #include "gl_lock.h"
@@ -133,8 +133,12 @@ test(void *data)
 {
   int rand_max;
   thread_data_t *d = (thread_data_t *)data;
-  phys_id = the_cores[d->id];
-  cluster_id = get_cluster(phys_id);
+#ifndef __MIC__
+    phys_id = the_cores[d->id];
+    cluster_id = get_cluster(phys_id);
+#else
+    phys_id=d->id;
+#endif
   rand_max = num_locks - 1;
 
   seeds = seed_rand();
@@ -210,7 +214,9 @@ void catcher(int sig)
 
 int main(int argc, char **argv)
 {
+#ifndef NO_SET_CPU
   set_cpu(the_cores[0]);
+#endif
   struct option long_options[] = 
     {
       // These options don't set a flag

@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <time.h>
-#ifndef __sparc__
+#ifndef __MIC__
 #include <numa.h>
 #endif
 #include "gl_lock.h"
@@ -106,9 +106,12 @@ typedef struct thread_data {
 void *test(void *data)
 {
     thread_data_t *d = (thread_data_t *)data;
-
+#ifndef __MIC__
     phys_id = d->the_core;
-    cluster_id = get_cluster(phys_id);
+       cluster_id = get_cluster(phys_id);
+#else
+       phys_id = d->the_core;
+#endif
 
     /* local initialization of locks */
     local_th_data[d->id] = init_lock_array_local(phys_id, num_locks, the_locks);
@@ -121,7 +124,9 @@ void *test(void *data)
     while (stop == 0) {
         uint32_t my_ticket = IAF_U32(&tail);
         while (head != my_ticket) {
+#ifndef __MIC__
             PAUSE;
+#endif
         }
         COMPILER_BARRIER;
         begin = getticks();
@@ -168,7 +173,9 @@ void catcher(int sig)
 
 int main(int argc, char **argv)
 {
-    set_cpu(the_cores[0]);
+#ifndef NO_SET_CPU
+  set_cpu(the_cores[0]);
+#endif
     struct option long_options[] = {
         // These options don't set a flag
         {"help",                      no_argument,       NULL, 'h'},
@@ -194,7 +201,7 @@ int main(int argc, char **argv)
     num_threads = DEFAULT_NUM_THREADS;
     acq_duration = DEFAULT_ACQ_DURATION;
     acq_delay = DEFAULT_ACQ_DELAY;
-    home_core = the_cores[DEFAULT_HOME_CORE];
+//    home_core = the_cores[DEFAULT_HOME_CORE];
     remote_core = DEFAULT_REMOTE_CORE;
 
     head=1;
@@ -386,7 +393,11 @@ int main(int argc, char **argv)
     printf("#acquires     : %lu (%f / s)\n", acquires, acquires * 1000.0 / duration);
 
 #endif
+#ifndef __MIC__
     printf("%d %lu %lu\n",get_cluster(remote_core), total_acquire/acquires,total_release/acquires);
+#else
+    printf("%d %lu %lu\n",remote_core, total_acquire/acquires,total_release/acquires);
+#endif
     /* Cleanup locks */
     free_lock_array_global(the_locks, num_locks);
 

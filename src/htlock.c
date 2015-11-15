@@ -274,7 +274,9 @@ htlock_wait_ticket(htlock_local_t* lock, const uint32_t ticket)
         }
         else
         {
-            PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
         }
     }
 #endif	/* OPTERON_OPTIMIZE */
@@ -292,7 +294,9 @@ htlock_wait_global(htlock_local_t* lock, const uint32_t ticket)
         }
         else
         {
-            PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
         }
     }
 }
@@ -307,9 +311,13 @@ again_local:
     local_ticket = DAF_U32(&localp->nxt);
     if (local_ticket < -1)	
     {
-        PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
         wait_cycles(-local_ticket * 120);
-        PAUSE;
+#ifndef __MIC__
+    PAUSE;
+#endif
         goto again_local;
     }
 

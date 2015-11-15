@@ -71,7 +71,9 @@ void alock_lock(array_lock_t* local_lock)
 #endif	/* OPTERON_OPTIMIZE */
     while (*flag == 0) 
     {
+#ifndef __MIC__
         PAUSE;
+#endif
 #if defined(OPTERON_OPTIMIZE)
         pause_rep(23);
         PREFETCHW(flag);

@@ -39,7 +39,7 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#ifndef __sparc__
+#ifndef __MIC__
 #include <numa.h>
 #endif
 #include <pthread.h>
